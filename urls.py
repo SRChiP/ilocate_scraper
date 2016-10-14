@@ -1,0 +1,2 @@
+class DialogURLs(object):
+    pass
