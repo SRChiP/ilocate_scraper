@@ -24,6 +24,14 @@ class RECORD(Base):
     device_state = Column(String(3), nullable=True)
 
 
+class ATTR(Base):
+    __tablename__ = 'attr'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(String, nullable=False)
+    value = Column(String, nullable=False)
+
+
 class Persistence(object):
 
     def __init__(self):
@@ -41,3 +49,7 @@ class Persistence(object):
         else:
             session.add(record)
         session.commit()
+
+    def get_attribute(self, name):
+        session = self.Session()
+        return session.query(ATTR.value).filter(ATTR.name == name).one()
