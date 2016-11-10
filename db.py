@@ -11,6 +11,7 @@ metadata = Base.metadata
 
 db_engine = create_engine('sqlite+pysqlite:///records.sqlite')
 
+
 class RECORD(Base):
     __tablename__ = 'record'
 
@@ -41,29 +42,15 @@ class Persistence(object):
         self.Session = sessionmaker(bind=db_engine)
         self.create_database()
 
-    # def session_scope(self):
-    #     """Provide a transactional scope around a series of operations."""
-    #     session = self.Session()
-    #     try:
-    #         yield session
-    #         session.commit()
-    #     except:
-    #         session.rollback()
-    #         raise
-    #     finally:
-    #         session.close()
+    def session_scope(decorated_function):
+        """Decorate the DB functions with this to automatically get a session."""
 
-    def session_scope(func):
-        """Decorator which wraps the decorated function in a transactional session. If the
-           function completes successfully, the transaction is committed. If not, the transaction
-           is rolled back."""
-
-        # @functools.wraps(func)
-        def outer_wrapper(*args, **kwargs):
-
-            session = args[0].Session()
+        @functools.wraps(decorated_function)
+        def wrapper(*args, **kwargs):
+            self = args[0]
+            session = self.Session()
             try:
-                yield func
+                db_result = decorated_function(*args, session=session, **kwargs)
                 session.commit()
             except:
                 session.rollback()
@@ -71,28 +58,30 @@ class Persistence(object):
             finally:
                 session.close()
 
-        return outer_wrapper
+            return db_result
+
+        return wrapper
 
     @classmethod
     def create_database(cls):
         metadata.create_all(db_engine, checkfirst=True)
 
-    def add_record(self, record, session):
-        session = self.Session()
+    @session_scope
+    def add_record(self, record, session=None):
         if hasattr(record, '__iter__'):
             session.add_all(record)
         else:
             session.add(record)
-        session.commit()
 
     @session_scope
     def get_count(self, session=None):
-        return session.filter(RECORD).count()
+        return session.query(RECORD).count()
 
-    def get_attribute(self, name, session):
+    @session_scope
+    def get_attribute(self, name, session=None):
         return session.query(ATTR.value).filter(ATTR.name == name).first()
 
     @property
     @session_scope
-    def is_first_run(self, session):
+    def is_first_run(self, session=None):
         return session
