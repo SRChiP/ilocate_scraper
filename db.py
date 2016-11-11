@@ -1,4 +1,5 @@
 import functools
+from functools import partial
 
 from sqlalchemy import Column, Integer, Boolean, DateTime, Date, Time, Float, String, create_engine
 from sqlalchemy.dialects.sqlite import BLOB, BOOLEAN, CHAR, DATE, DATETIME, DECIMAL, FLOAT, INTEGER, REAL, NUMERIC, SMALLINT, TIME, TIMESTAMP, VARCHAR
@@ -46,9 +47,9 @@ class Persistence(object):
         @functools.wraps(decorated_function)
         def wrapper(*args, **kwargs):
             self = args[0]
-            session = self.Session()
+            session = kwargs['session'] if 'session' in kwargs else kwargs.setdefault('session', self.Session())
             try:
-                db_result = decorated_function(*args, session=session, **kwargs)
+                db_result = decorated_function(*args, **kwargs)
                 session.commit()
             except:
                 session.rollback()

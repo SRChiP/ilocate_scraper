@@ -45,7 +45,6 @@ history = get_data("2016-10-25")
 
 
 persistence = Persistence()
-persistence.create_database()
 for data in history:
     db_rec = RECORD(speed=data['speed'], dist_from_last=data['dist_from_last'], device_state=data['state'],
                     lat=data['lat'], lon=data['lon'], time_from_last=data['time_from_last'], timestamp=data['timestamp'],
