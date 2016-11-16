@@ -2,6 +2,8 @@ import requests
 from datetime import datetime
 import pytz
 import re
+
+from api import IlocateAPI
 from db import Persistence, RECORD
 from urls import DialogURLs
 import configparser
@@ -9,18 +11,15 @@ import configparser
 config = configparser.ConfigParser()
 config.read("config.ini")
 
+api = IlocateAPI(config['login']['usernumber'], config['login']['password'])
+
 
 def get_data(date):
 
-    s = requests.session()
-    login = s.post(**DialogURLs.login_url(config['login']['usernumber'], config['login']['password']))
-    getd = s.post(**DialogURLs.current_url())
-    # print(getd.json())
-    his = s.post(**DialogURLs.history_url(config['login']['carnumber'], date))
+    login = api.login()
+    getd = api.get_recent_data()
+    history_data = api.get_data(date)
     # print(his.json())
-    history_json = his.json()
-
-    history_data = history_json['data']
 
     # Remove keys
     keys_to_keep = {'speed', 'dist_from_last', 'state', 'lon', 'time_from_last', 'lat', 'time_st'}
@@ -35,12 +34,12 @@ def get_data(date):
         new_date = new_date.replace(tzinfo=pytz.timezone("Asia/Colombo"))
         new_dict['date'] = new_date.date()
         new_dict['time'] = new_date.time()
-        new_dict['datetime'] = new_date
+        new_dict['datetime'] = new_date  # saved without timezone
         new_dict['timestamp'] = new_date.timestamp()
         parsed_history_data.append(new_dict)
     return parsed_history_data
 
-history = get_data("2016-10-25")
+history = get_data("2016-11-14")
 # print(history)
 
 
