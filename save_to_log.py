@@ -5,6 +5,7 @@ import re
 
 from api import IlocateAPI
 from db import Persistence, RECORD
+from transformer import transform_data
 from urls import DialogURLs
 import configparser
 
@@ -21,23 +22,7 @@ def get_data(date):
     history_data = api.get_data(date)
     # print(his.json())
 
-    # Remove keys
-    keys_to_keep = {'speed', 'dist_from_last', 'state', 'lon', 'time_from_last', 'lat', 'time_st'}
-
-    parsed_history_data = []
-    # The date should be zero-padded to convert into an DateTime object.
-    zero_pad_date = re.compile(r'(^\D+) (\d)(, )')
-    for data in history_data:
-        new_dict = {k: v for k, v in data.items() if k in keys_to_keep}
-        # Do the actual zero-padding. "10 5, 2016" --> "10 05, 2016".
-        new_date = datetime.strptime(zero_pad_date.sub(r'\1 0\2\3', new_dict['time_st']), '%B %d, %Y, %I:%M:%S %p')
-        new_date = new_date.replace(tzinfo=pytz.timezone("Asia/Colombo"))
-        new_dict['date'] = new_date.date()
-        new_dict['time'] = new_date.time()
-        new_dict['datetime'] = new_date  # saved without timezone
-        new_dict['timestamp'] = new_date.timestamp()
-        parsed_history_data.append(new_dict)
-    return parsed_history_data
+    return transform_data(history_data)
 
 history = get_data("2016-11-14")
 # print(history)

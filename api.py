@@ -1,3 +1,4 @@
+from datetime import datetime
 from json import JSONDecodeError
 
 import requests
@@ -13,12 +14,15 @@ import math
 
 
 def retry(tries=1, delay=2, backoff=2):
-    '''Retries a function or method until it returns True.
+    """
+    Retries a function or method until it gives out no exceptions.
 
-  delay sets the initial delay in seconds, and backoff sets the factor by which
-  the delay should lengthen after each failure. backoff must be greater than 1,
-  or else it isn't really a backoff. tries must be at least 0, and delay
-  greater than 0.'''
+    :param tries: Number of times to try reexecuting the code before it fails.
+    :param delay: delay sets the initial delay in seconds, and backoff sets the factor by which
+        the delay should lengthen after each failure.
+    :param backoff: backoff must be greater than 1, or else it isn't really a backoff.
+    :return:
+    """
     if backoff <= 1:
         raise ValueError("backoff must be greater than 1")
     tries = math.floor(tries)
@@ -74,6 +78,12 @@ class IlocateAPI(object):
 
     @retry()
     def get_data(self, date, carnumber=None):
+        if isinstance(date, (date, datetime)):
+            try:
+                date = date.date()
+            except AttributeError:
+                pass
+            date = "{:%Y-%m-%d}".format(date)
         carnumber = self.carnumber if not carnumber else carnumber
         response = self.http_session.post(**DialogURLs.history_url(carnumber, date))
         json_data = response.json()
