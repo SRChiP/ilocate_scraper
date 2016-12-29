@@ -24,7 +24,19 @@ def get_data(date):
 
     return transform_data(history_data)
 
+
+def get_data_rg(date1, date2):
+
+    login = api.login()
+    getd = api.get_recent_data()
+    history_data = api.get_data_range(date1, date2)
+    # print(his.json())
+
+    return transform_data(history_data)
+
+
 history = get_data("2016-11-14")
+history2 = get_data_rg(datetime(2016, 12, 2), datetime.today())
 # print(history)
 
 

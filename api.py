@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 from json import JSONDecodeError
 
 import requests
@@ -78,15 +78,51 @@ class IlocateAPI(object):
 
     @retry()
     def get_data(self, date, carnumber=None):
-        if isinstance(date, (date, datetime)):
-            try:
-                date = date.date()
-            except AttributeError:
-                pass
-            date = "{:%Y-%m-%d}".format(date)
+        if isinstance(date, datetime.datetime):
+            date = date.date()
+            date_str = "{:%Y-%m-%d}".format(date)
+        elif isinstance(date, datetime.date):
+            date_str = "{:%Y-%m-%d}".format(date)
+        elif isinstance(date, str):
+            date_str = date
+
         carnumber = self.carnumber if not carnumber else carnumber
-        response = self.http_session.post(**DialogURLs.history_url(carnumber, date))
+        response = self.http_session.post(**DialogURLs.history_url(carnumber, date, "12:00:00 AM", "11:59:59 PM"))
         json_data = response.json()
         if not json_data['success']:
             raise LookupError(json_data['error'])
         return json_data['data']
+
+    @retry()
+    def get_data_range(self, start_date: datetime.datetime, end_date: datetime.datetime, carnumber=None) -> list:
+        if start_date > end_date:
+            raise ValueError("start_date is after end_date.")
+        st_day = start_date.date()
+        ed_day = end_date.date()
+        number_of_days = (ed_day - st_day).days
+        carnumber = self.carnumber if not carnumber else carnumber
+
+        response_list = []
+        for iter_day in range(number_of_days + 1):
+            current_day = st_day + datetime.timedelta(days=iter_day)
+            start_time = "12:00:00 AM"
+            end_time = "11:59:59 PM"
+            if current_day == st_day:
+                # If this is the start date
+                start_time = start_date.strftime('%I:%M:%S %p')
+            if current_day == ed_day:
+                # If this is the ending day
+                end_time = end_date.strftime('%I:%M:%S %p')
+            date_string = current_day.strftime('%Y-%m-%d')
+
+            response = self.http_session.post(**DialogURLs.history_url(carnumber, date_string, start_time, end_time))
+            response_list.append(response)
+
+        data_list = []
+        for resp in response_list:
+            json_data = resp.json()
+            if not json_data['success']:
+                raise LookupError(json_data['error'])
+            data_list.extend(json_data['data'])
+
+        return data_list

@@ -1,4 +1,4 @@
-import datetime
+from datetime import date, datetime, timedelta
 
 
 class DialogURLs(object):
@@ -19,14 +19,9 @@ class DialogURLs(object):
         }
 
     @staticmethod
-    def history_url(carnumber, date):
-        if isinstance(date, str):
-            date_str = date
-        else:
-            date = datetime.datetime.now()
-            date_str = date.strftime('%Y-%m-%d')
+    def history_url(carnumber, check_date, start_time, end_time) -> dict:
         return {
             'url': "http://locate.dialog.lk/web/index.php",
-            'data': {"number": carnumber, "start_time": "12:00:00 AM", "end_time": "11:59:59 PM", "date": date_str},
+            'data': {"number": carnumber, "start_time": start_time, "end_time": end_time, "date": check_date},
             'params': {"r": "/iLocateWeb/location/getHistoryData"}
         }
