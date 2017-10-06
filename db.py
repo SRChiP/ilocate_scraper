@@ -92,3 +92,7 @@ class Persistence(object):
     def is_first_run(self, session=None):
         return bool(session.query(ATTR).filter(ATTR.name == "first_run").first())
 
+    @property
+    @session_scope
+    def latest_record_datetime(self, session=None):
+        return session.query(RECORD.dt).order_by(RECORD.dt.desc()).first()

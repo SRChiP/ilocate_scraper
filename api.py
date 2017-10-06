@@ -11,8 +11,6 @@ import math
 
 
 # Retry decorator with exponential backoff
-
-
 def retry(tries=1, delay=2, backoff=2):
     """
     Retries a function or method until it gives out no exceptions.
@@ -77,7 +75,7 @@ class IlocateAPI(object):
         return current_data['data']
 
     @retry()
-    def get_data(self, date, carnumber=None):
+    def get_data(self, date, start_time=datetime.time(0, 0, 0), carnumber=None) -> dict:
         if isinstance(date, datetime.datetime):
             date = date.date()
             date_str = "{:%Y-%m-%d}".format(date)
@@ -85,9 +83,13 @@ class IlocateAPI(object):
             date_str = "{:%Y-%m-%d}".format(date)
         elif isinstance(date, str):
             date_str = date
+        if isinstance(start_time, datetime.time):
+            start_time_str = "{:%I:%M:%S %p}".format(start_time)
+        else:
+            start_time_str = start_time
 
         carnumber = self.carnumber if not carnumber else carnumber
-        response = self.http_session.post(**DialogURLs.history_url(carnumber, date, "12:00:00 AM", "11:59:59 PM"))
+        response = self.http_session.post(**DialogURLs.history_url(carnumber, date, start_time_str, "11:59:59 PM"))
         json_data = response.json()
         if not json_data['success']:
             raise LookupError(json_data['error'])
