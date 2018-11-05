@@ -1,13 +1,12 @@
 import datetime
+import functools
+import math
+import time
 from json import JSONDecodeError
 
 import requests
-import functools
 
-from urls import DialogURLs
-
-import time
-import math
+from ilocate.urls import DialogURLs
 
 
 # Retry decorator with exponential backoff

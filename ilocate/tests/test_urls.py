@@ -1,4 +1,4 @@
-import urls
+from ilocate import urls
 import unittest
 import mock
 
