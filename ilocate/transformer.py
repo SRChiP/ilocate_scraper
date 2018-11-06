@@ -1,9 +1,12 @@
+import logging
 import re
 from datetime import datetime
 
 import pytz
 
 from ilocate.db import RECORD
+
+log = logging.getLogger(__name__)
 
 zero_pad_date = re.compile(r'(^\D+) (\d)(, )')
 keys_to_keep = {'speed', 'dist_from_last', 'state', 'lon', 'time_from_last', 'lat', 'time_st', 'number'}
@@ -37,4 +40,3 @@ def dict_to_record_objects(single_record_dict):
                   timestamp=single_record_dict['timestamp'],
                   date=single_record_dict['date'], time=single_record_dict['time'],
                   dt=single_record_dict['datetime'])
-

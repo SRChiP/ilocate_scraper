@@ -1,10 +1,12 @@
 import functools
-from functools import partial
+import logging
 
-from sqlalchemy import Column, Integer, Boolean, DateTime, Date, Time, Float, String, create_engine
-from sqlalchemy.dialects.sqlite import BLOB, BOOLEAN, CHAR, DATE, DATETIME, DECIMAL, FLOAT, INTEGER, REAL, NUMERIC, SMALLINT, TIME, TIMESTAMP, VARCHAR
+from sqlalchemy import Column, Integer, DateTime, Date, Time, Float, String, create_engine
+from sqlalchemy.dialects.sqlite import NUMERIC
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+
+log = logging.getLogger(__name__)
 
 Base = declarative_base()
 metadata = Base.metadata
@@ -63,6 +65,7 @@ class Persistence(object):
 
     @classmethod
     def create_database(cls):
+        log.info("Initialising DB")
         metadata.create_all(db_engine, checkfirst=True)
 
     @session_scope
@@ -71,6 +74,10 @@ class Persistence(object):
             session.add_all(record)
         else:
             session.add(record)
+
+    @session_scope
+    def commit(self, session=None):
+        session.commit()
 
     @session_scope
     def get_count(self, session=None):
@@ -95,4 +102,5 @@ class Persistence(object):
     @property
     @session_scope
     def latest_record_datetime(self, session=None):
-        return session.query(RECORD.dt).order_by(RECORD.dt.desc()).first()
+        result = session.query(RECORD.dt).order_by(RECORD.dt.desc()).first()
+        return result[0] if result else result

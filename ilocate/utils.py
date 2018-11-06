@@ -26,18 +26,19 @@ def retry(tries=1, delay=2, backoff=2):
         @functools.wraps(f)
         def f_retry(*args, **kwargs):
             mtries, mdelay = tries, delay  # make mutable
-
+            ex = None
             while mtries > 0:
                 try:
                     rv = f(*args, **kwargs)
                 except Exception as e:
+                    ex = e
                     mtries -= 1  # consume an attempt
                     time.sleep(mdelay)  # wait...
                     mdelay *= backoff  # make future wait longer
                     args[0].login()
                 else:
                     return rv
-            raise
+            raise ex
 
         return f_retry  # true decorator -> decorated function
 

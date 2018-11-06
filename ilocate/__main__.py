@@ -1,28 +1,39 @@
-
 # -*- coding: utf-8 -*-
 import configparser
+import sys
 from datetime import datetime
 
 from ilocate.api import IlocateAPI
-from ilocate.db import Persistence, RECORD
+from ilocate.db import Persistence
 from ilocate.runner import Runner
+
+import logging
 
 
 def main():
     """Main routine of ilocate."""
-    # history = get_data("2017-10-4")
+    logging.basicConfig(
+        level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        stream=sys.stdout)
 
+    logging.info('iLocate Scraper Started')
+
+    logging.info("Reading the config.")
     config = configparser.ConfigParser()
     config.read(["config.ini", "../config.ini"])
+    logging.debug("Config loaded")
 
     api = IlocateAPI(config['login']['usernumber'], config['login']['password'])
+    logging.info("API configured with user: %s", api.usernumber)
     persistence = Persistence()
 
     runner = Runner(api, persistence)
     last_record = persistence.latest_record_datetime
-    runner.find_oldest_record(120)
-    runner.retrieve_and_save_date_range(datetime(2018, 11, 3), datetime.today())
-    # print(history)
+    if not last_record:
+        oldest_rec = runner.find_oldest_record(120)
+        runner.retrieve_and_save_date_range(oldest_rec, datetime.today())
+    else:
+        runner.daily_update()
 
     """{'speed': 0, 'dist_from_last': 0, 'state': 'on', 'lon': '7.8890638', 'time_from_last': 0,
     'nic': None, 'lat': '7.0597020', 'timestamp': 1467524518, 'device_type': '9', 'charge_status': '1', 'id': '1518',
@@ -39,4 +50,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

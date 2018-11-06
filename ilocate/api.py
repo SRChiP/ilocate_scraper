@@ -1,12 +1,13 @@
 import datetime
+import logging
 
 import requests
 
 from ilocate.urls import DialogURLs
-
-
 # Retry decorator with exponential backoff
 from ilocate.utils import retry
+
+log = logging.getLogger(__name__)
 
 
 class IlocateAPI(object):
@@ -17,8 +18,11 @@ class IlocateAPI(object):
         self.http_session = requests.session()
 
     def login(self, automatically_set_carnumber=True):
+        log.info("Logging in to ilocate")
         login_response = self.http_session.post(**DialogURLs.login_url(self.usernumber, self.password))
         if login_response.status_code != 200 or 'maps.googleapis.com' not in login_response.text:
+            log.error("Session invalid")
+            log.error(login_response)
             raise LookupError('Could not login into the portal.')
         if automatically_set_carnumber:
             recent_data = self.get_recent_data()
@@ -27,8 +31,11 @@ class IlocateAPI(object):
 
     @retry(tries=3)
     def get_recent_data(self):
+        log.debug('Retrieving recent data')
         current_data = self.http_session.post(**DialogURLs.current_url()).json()
+        log.debug('Retrieved recent data')
         if not current_data['success']:
+            log.error('Recent data retrieval error\n%s', current_data)
             raise LookupError(current_data['error'])
         return current_data['data']
 
@@ -60,6 +67,7 @@ class IlocateAPI(object):
         st_day = start_date.date()
         ed_day = end_date.date()
         number_of_days = (ed_day - st_day).days
+        log.info('The range has %s days.', number_of_days)
         carnumber = self.carnumber if not carnumber else carnumber
 
         response_list = []
