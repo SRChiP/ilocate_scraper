@@ -25,14 +25,14 @@ class IlocateAPI(object):
             if len(recent_data) == 1:
                 self.carnumber = recent_data[0]['number']
 
-    @retry()
+    @retry(tries=3)
     def get_recent_data(self):
         current_data = self.http_session.post(**DialogURLs.current_url()).json()
         if not current_data['success']:
             raise LookupError(current_data['error'])
         return current_data['data']
 
-    @retry()
+    @retry(tries=3)
     def get_data(self, date, start_time=datetime.time(0, 0, 0), carnumber=None) -> dict:
         if isinstance(date, datetime.datetime):
             date = date.date()
@@ -53,7 +53,7 @@ class IlocateAPI(object):
             raise LookupError(json_data['error'])
         return json_data['data']
 
-    @retry()
+    @retry(tries=3)
     def get_data_range(self, start_date: datetime.datetime, end_date: datetime.datetime, carnumber=None) -> list:
         if start_date > end_date:
             raise ValueError("start_date is after end_date.")

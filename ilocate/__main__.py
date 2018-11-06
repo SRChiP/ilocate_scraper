@@ -20,7 +20,7 @@ def main():
 
     runner = Runner(api, persistence)
     last_record = persistence.latest_record_datetime
-    runner.find_oldest_record(365)
+    runner.find_oldest_record(120)
     runner.retrieve_and_save_date_range(datetime(2018, 11, 3), datetime.today())
     # print(history)
 
