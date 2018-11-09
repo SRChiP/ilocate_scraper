@@ -18,9 +18,10 @@ def filter_api_data(api_data):
 
     for data in api_data:
         new_dict = {k: v for k, v in data.items() if k in keys_to_keep}
-        # The date should be zero-padded to convert into an DateTime object.. "10 5, 2016" --> "10 05, 2016".
-        new_date = datetime.strptime(zero_pad_date.sub(r'\1 0\2\3', new_dict['time_st']), '%B %d, %Y, %I:%M:%S %p')
-        new_date = new_date.replace(tzinfo=pytz.timezone("Asia/Colombo"))
+        # # The date should be zero-padded to convert into an DateTime object.. "10 5, 2016" --> "10 05, 2016".
+        # new_date = datetime.strptime(zero_pad_date.sub(r'\1 0\2\3', new_dict['time_st']), '%B %d, %Y, %I:%M:%S %p')
+        new_date = datetime.fromtimestamp(data['timestamp'])
+        new_date = new_date.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("Asia/Colombo"))
         new_dict['date'] = new_date.date()
         new_dict['time'] = new_date.time()
         new_dict['datetime'] = new_date  # saved without timezone

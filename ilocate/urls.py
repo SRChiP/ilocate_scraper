@@ -1,10 +1,7 @@
-from datetime import date, datetime, timedelta
-
-
 class DialogURLs(object):
 
     @staticmethod
-    def login_url(usernumber, password):
+    def login_url(usernumber, password) -> dict:
         return {
             'url': "http://locate.dialog.lk/web/index.php",
             'data': {"LoginForm[username]": usernumber, "LoginForm[password]": password},
@@ -12,7 +9,7 @@ class DialogURLs(object):
         }
 
     @staticmethod
-    def current_url():
+    def current_url() -> dict:
         return {
             'url': "http://locate.dialog.lk/web/index.php",
             'params': {"r": "/iLocateWeb/location/getCurrentData"}
