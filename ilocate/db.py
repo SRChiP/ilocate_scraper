@@ -30,14 +30,6 @@ class RECORD(Base):
     device_state = Column(String(3), nullable=True)
 
 
-class ATTR(Base):
-    __tablename__ = 'attr'
-
-    id = Column(Integer, autoincrement=True, primary_key=True)
-    name = Column(String, nullable=False)
-    value = Column(String, nullable=False)
-
-
 class Persistence(object):
 
     def __init__(self):
@@ -83,21 +75,10 @@ class Persistence(object):
     def get_count(self, session=None):
         return session.query(RECORD).count()
 
-    @session_scope
-    def get_attribute(self, name, session=None):
-        return session.query(ATTR.value).filter(ATTR.name == name).first()
-
-    @session_scope
-    def set_attribute(self, name, value, session=None):
-        attribute = self.get_attribute(name)
-        if not attribute:
-            attribute = ATTR(name=name, value=value)
-        return session.add(attribute)
-
     @property
     @session_scope
     def is_first_run(self, session=None):
-        return bool(session.query(ATTR).filter(ATTR.name == "first_run").first())
+        return not bool(session.query(RECORD).first())
 
     @property
     @session_scope
