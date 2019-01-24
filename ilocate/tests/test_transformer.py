@@ -37,16 +37,16 @@ class TestUtils(unittest.TestCase):
             }
         ]
 
-    @staticmethod
-    def _dict_compare(d1: dict, d2: dict) -> tuple:
-        d1_keys = set(d1.keys())
-        d2_keys = set(d2.keys())
-        intersect_keys = d1_keys.intersection(d2_keys)
-        added = d1_keys - d2_keys
-        removed = d2_keys - d1_keys
-        modified = {o: (d1[o], d2[o]) for o in intersect_keys if d1[o] != d2[o]}
-        same = set(o for o in intersect_keys if d1[o] == d2[o])
-        return added, removed, modified, same
+    # @staticmethod
+    # def _dict_compare(d1: dict, d2: dict) -> tuple:
+    #     d1_keys = set(d1.keys())
+    #     d2_keys = set(d2.keys())
+    #     intersect_keys = d1_keys.intersection(d2_keys)
+    #     added = d1_keys - d2_keys
+    #     removed = d2_keys - d1_keys
+    #     modified = {o: (d1[o], d2[o]) for o in intersect_keys if d1[o] != d2[o]}
+    #     same = set(o for o in intersect_keys if d1[o] == d2[o])
+    #     return added, removed, modified, same
 
     def test_filter_api_data(self):
         output = filter_api_data(self.input_payload)
@@ -80,11 +80,12 @@ class TestUtils(unittest.TestCase):
             }
         ]
         for x in range(4):
-            added, removed, modified, same = self._dict_compare(expected_value[x], output[x])
-            self.assertLess(len(added), 1, added)
-            self.assertLess(len(removed), 1, removed)
-            self.assertLess(len(modified), 1, modified)
-            self.assertEqual(len(same), len(output[x]))
+            self.assertDictEqual(output[x], expected_value[x])
+            # added, removed, modified, same = self._dict_compare(expected_value[x], output[x])
+            # self.assertLess(len(added), 1, added)
+            # self.assertLess(len(removed), 1, removed)
+            # self.assertLess(len(modified), 1, modified)
+            # self.assertEqual(len(same), len(output[x]))
 
 
 if __name__ == '__main__':

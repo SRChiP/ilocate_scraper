@@ -1,7 +1,7 @@
 import unittest
 
 import time
-from mock import Mock
+from unittest.mock import Mock
 
 from ilocate.utils import retry
 

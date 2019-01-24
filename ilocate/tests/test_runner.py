@@ -1,6 +1,6 @@
 import unittest
-from datetime import datetime
-from unittest.mock import Mock, patch
+from datetime import datetime, timedelta
+from unittest.mock import Mock, patch, PropertyMock
 
 from ilocate.runner import Runner
 
@@ -24,6 +24,9 @@ class TestRunner(unittest.TestCase):
             },
         ])
         persistence = Mock()
+        self.yesterday = datetime.now() - timedelta(days=1)
+        type(persistence).latest_record_datetime = PropertyMock(return_value=self.yesterday)
+
         self.runner = Runner(api, persistence)
 
     def test_find_oldest_record(self):
@@ -39,8 +42,12 @@ class TestRunner(unittest.TestCase):
     def test_save_date_range(self):
         raise NotImplementedError
 
-    def test_daily_update(self):
-        raise NotImplementedError
+    @patch('ilocate.runner.Runner.retrieve_and_save_date_range')
+    def test_daily_update(self, save_date_range_mock):
+        self.runner.daily_update()
+        start, end = save_date_range_mock.call_args[0]
+        self.assertGreater(start, self.yesterday)
+        self.assertLessEqual(end, datetime.now())
 
 
 if __name__ == '__main__':
