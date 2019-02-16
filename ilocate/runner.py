@@ -12,23 +12,26 @@ class Runner(object):
         self.api = api
         self.persistence = persistence
 
-    def find_oldest_record(self, history_to_check=60):
+    def find_oldest_record(self, history_to_check=60, today=None):
         """Use bisect algorithm to find the oldest available record"""
         self.api.login()
-        lo = (datetime.today() - timedelta(days=history_to_check)).timestamp()
-        hi = datetime.today().timestamp()
+        # Today is mostly used for debug purposes
+        if not today:
+            today = datetime.today().date()
+        lo = -history_to_check
+        hi = 0
         count = 1
         while lo < hi:
             mid = (lo + hi) // 2
-            log.debug("Checking date %s", datetime.fromtimestamp(mid))
-            if self._check_date_valid(datetime.fromtimestamp(mid)):
+            log.debug("Checking date %s", today + timedelta(days=mid))
+            if self._check_date_valid(today + timedelta(days=mid)):
                 hi = mid
             else:
                 lo = mid + 1
             log.debug("Loop count: %s", count)
             count += 1
-        log.debug("Date %s was chosen as oldest record", datetime.fromtimestamp(lo))
-        return datetime.fromtimestamp(lo)
+        log.debug("Date %s was chosen as oldest record", today + timedelta(days=lo))
+        return (today + timedelta(days=lo)).date()
 
     def _check_date_valid(self, date):
         data = self.api.get_data(date)

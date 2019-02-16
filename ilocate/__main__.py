@@ -30,8 +30,8 @@ def main():
     runner = Runner(api, persistence)
     last_record = persistence.latest_record_datetime
     if not last_record:
-        oldest_rec = runner.find_oldest_record(120)
-        runner.retrieve_and_save_date_range(oldest_rec, datetime.today())
+        oldest_rec_date = runner.find_oldest_record(120)
+        runner.retrieve_and_save_date_range(datetime.combine(oldest_rec_date, datetime.min.time()), datetime.today())
     else:
         runner.daily_update()
 
